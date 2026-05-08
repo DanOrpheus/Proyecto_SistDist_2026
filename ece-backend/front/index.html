@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>App Médico - Consulta ECE</title>
+    <style>
+        body { font-family: Arial, sans-serif; padding: 20px; }
+        .container { border: 1px solid #ccc; padding: 20px; max-width: 500px; }
+        input, button { padding: 10px; margin: 5px 0; width: 100%; box-sizing: border-box; }
+        pre { background: #f4f4f4; padding: 10px; border-radius: 5px; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h2>Consulta de Expediente Clínico</h2>
+    <label for="curpInput">Ingrese CURP del Paciente:</label>
+    <input type="text" id="curpInput" placeholder="Ej. ABCD123456EFGHIJ78">
+    <button onclick="consultarExpediente()">Buscar Expediente</button>
+
+    <h3>Resultado:</h3>
+    <pre id="resultado">Esperando consulta...</pre>
+</div>
+
+<script>
+    // Esta función simula la comunicación App Médico -> API Gateway -> Backend
+    async function consultarExpediente() {
+        const curp = document.getElementById('curpInput').value;
+        const resultadoDiv = document.getElementById('resultado');
+        
+        if(!curp) {
+            resultadoDiv.innerText = "Por favor ingrese un CURP.";
+            return;
+        }
+
+        resultadoDiv.innerText = "Consultando...";
+
+        try {
+            // Aquí ocurre la comunicación REST al backend de Java (Quarkus corre en el puerto 8080 por defecto)
+            const response = await fetch('http://localhost:8080/api/expedientes/' + curp);
+            
+            if (response.ok) {
+                const data = await response.json();
+                // Mostramos el JSON del expediente en pantalla
+                resultadoDiv.innerText = JSON.stringify(data, null, 2);
+            } else if (response.status === 404) {
+                resultadoDiv.innerText = "Expediente no encontrado.";
+            } else {
+                resultadoDiv.innerText = "Error en el servidor.";
+            }
+        } catch (error) {
+            resultadoDiv.innerText = "Error de conexión: " + error.message;
+        }
+    }
+</script>
+
+</body>
+</html>
