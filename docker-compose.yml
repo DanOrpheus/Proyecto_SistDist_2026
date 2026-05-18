@@ -1,0 +1,24 @@
+services:
+  mongo:
+    image: mongo:7
+    container_name: ece-mongo
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongo-data:/data/db
+
+  ece-backend:
+    build:
+      context: ./ece-backend
+    container_name: ece-backend
+    depends_on:
+      - mongo
+    environment:
+      QUARKUS_MONGODB_CONNECTION_STRING: mongodb://mongo:27017
+      QUARKUS_MONGODB_DATABASE: ece_nacional
+      QUARKUS_HTTP_HOST: 0.0.0.0
+    ports:
+      - "8080:8080"
+
+volumes:
+  mongo-data:

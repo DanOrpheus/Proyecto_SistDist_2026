@@ -2,20 +2,63 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <title>App Médico - Consulta ECE</title>
+    <title>App Medico - Consulta ECE</title>
     <style>
-        body { font-family: Arial, sans-serif; padding: 20px; }
-        .container { border: 1px solid #ccc; padding: 20px; max-width: 500px; }
-        input, button { padding: 10px; margin: 5px 0; width: 100%; box-sizing: border-box; }
-        pre { background: #f4f4f4; padding: 10px; border-radius: 5px; }
+        body {
+            font-family: Arial, sans-serif;
+            padding: 20px;
+        }
+
+        .container {
+            border: 1px solid #ccc;
+            padding: 20px;
+            max-width: 560px;
+        }
+
+        input,
+        button {
+            box-sizing: border-box;
+            margin: 5px 0 12px;
+            padding: 10px;
+            width: 100%;
+        }
+
+        button {
+            cursor: pointer;
+        }
+
+        pre {
+            background: #f4f4f4;
+            border-radius: 5px;
+            min-height: 44px;
+            padding: 10px;
+            white-space: pre-wrap;
+        }
+
+        .status {
+            color: #155724;
+            font-weight: bold;
+        }
     </style>
 </head>
 <body>
 
 <div class="container">
-    <h2>Consulta de Expediente Clínico</h2>
+    <h2>Consulta de Expediente Clinico</h2>
+
+    <h3>Login</h3>
+    <label for="usuarioInput">Usuario:</label>
+    <input type="text" id="usuarioInput" value="admin">
+
+    <label for="passwordInput">Contrasena:</label>
+    <input type="password" id="passwordInput" value="1234">
+
+    <button onclick="login()">Iniciar sesion</button>
+    <p id="loginStatus">Sin sesion iniciada.</p>
+
+    <h3>Buscar expediente</h3>
     <label for="curpInput">Ingrese CURP del Paciente:</label>
-    <input type="text" id="curpInput" placeholder="Ej. ABCD123456EFGHIJ78">
+    <input type="text" id="curpInput" value="TEST010101HSONXX01">
     <button onclick="consultarExpediente()">Buscar Expediente</button>
 
     <h3>Resultado:</h3>
@@ -23,12 +66,48 @@
 </div>
 
 <script>
-    // Esta función simula la comunicación App Médico -> API Gateway -> Backend
+    const API_URL = "http://localhost:8080";
+    let token = "";
+
+    async function login() {
+        const username = document.getElementById("usuarioInput").value;
+        const password = document.getElementById("passwordInput").value;
+        const loginStatus = document.getElementById("loginStatus");
+
+        loginStatus.innerText = "Iniciando sesion...";
+
+        try {
+            const response = await fetch(`${API_URL}/auth/login`, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ username, password })
+            });
+
+            if (!response.ok) {
+                token = "";
+                loginStatus.innerText = "Credenciales invalidas.";
+                return;
+            }
+
+            token = await response.text();
+            loginStatus.className = "status";
+            loginStatus.innerText = "Sesion iniciada correctamente.";
+        } catch (error) {
+            token = "";
+            loginStatus.innerText = `Error de conexion: ${error.message}`;
+        }
+    }
+
     async function consultarExpediente() {
-        const curp = document.getElementById('curpInput').value;
-        const resultadoDiv = document.getElementById('resultado');
-        
-        if(!curp) {
+        const curp = document.getElementById("curpInput").value.trim();
+        const resultadoDiv = document.getElementById("resultado");
+
+        if (!token) {
+            resultadoDiv.innerText = "Primero inicia sesion.";
+            return;
+        }
+
+        if (!curp) {
             resultadoDiv.innerText = "Por favor ingrese un CURP.";
             return;
         }
@@ -36,20 +115,22 @@
         resultadoDiv.innerText = "Consultando...";
 
         try {
-            // Aquí ocurre la comunicación REST al backend de Java (Quarkus corre en el puerto 8080 por defecto)
-            const response = await fetch('http://localhost:8080/api/expedientes/' + curp);
-            
+            const response = await fetch(`${API_URL}/api/expedientes/${curp}`, {
+                headers: { Authorization: `Bearer ${token}` }
+            });
+
             if (response.ok) {
                 const data = await response.json();
-                // Mostramos el JSON del expediente en pantalla
                 resultadoDiv.innerText = JSON.stringify(data, null, 2);
             } else if (response.status === 404) {
                 resultadoDiv.innerText = "Expediente no encontrado.";
+            } else if (response.status === 401 || response.status === 403) {
+                resultadoDiv.innerText = "No autorizado. Inicia sesion otra vez.";
             } else {
-                resultadoDiv.innerText = "Error en el servidor.";
+                resultadoDiv.innerText = `Error en el servidor: ${response.status}`;
             }
         } catch (error) {
-            resultadoDiv.innerText = "Error de conexión: " + error.message;
+            resultadoDiv.innerText = `Error de conexion: ${error.message}`;
         }
     }
 </script>
