@@ -1,139 +1,692 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-    <meta charset="UTF-8">
-    <title>App Medico - Consulta ECE</title>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Expediente Clinico Electronico Nacional</title>
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&family=JetBrains+Mono&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: "#000a1e",
+                        "primary-container": "#002147",
+                        secondary: "#0059bb",
+                        "secondary-container": "#0070ea",
+                        "tertiary-fixed-dim": "#00daf3",
+                        surface: "#faf9fd",
+                        "surface-container": "#efedf1",
+                        "surface-container-low": "#f4f3f7",
+                        "surface-container-high": "#e9e7eb",
+                        "on-surface": "#1a1b1e",
+                        "on-surface-variant": "#44474e",
+                        error: "#ba1a1a",
+                        "error-container": "#ffdad6"
+                    },
+                    fontFamily: {
+                        sans: ["Inter", "sans-serif"],
+                        mono: ["JetBrains Mono", "monospace"]
+                    }
+                }
+            }
+        };
+    </script>
     <style>
         body {
-            font-family: Arial, sans-serif;
-            padding: 20px;
+            min-height: 100vh;
+            background:
+                radial-gradient(circle at 10% 10%, rgba(0, 112, 234, 0.12), transparent 28%),
+                radial-gradient(circle at 90% 20%, rgba(0, 218, 243, 0.12), transparent 26%),
+                #faf9fd;
         }
 
-        .container {
-            border: 1px solid #ccc;
-            padding: 20px;
-            max-width: 560px;
+        .glass-panel {
+            background: rgba(255, 255, 255, 0.82);
+            border: 1px solid rgba(255, 255, 255, 0.58);
+            box-shadow: 0 24px 60px rgba(0, 10, 30, 0.08);
+            backdrop-filter: blur(20px);
         }
 
-        input,
-        button {
-            box-sizing: border-box;
-            margin: 5px 0 12px;
-            padding: 10px;
-            width: 100%;
+        .medical-grid-bg {
+            background-image: radial-gradient(circle at 2px 2px, rgba(0, 10, 30, 0.07) 1px, transparent 0);
+            background-size: 32px 32px;
         }
 
-        button {
-            cursor: pointer;
+        .material-symbols-outlined {
+            font-variation-settings: "FILL" 0, "wght" 400, "GRAD" 0, "opsz" 24;
+            vertical-align: middle;
         }
 
-        pre {
-            background: #f4f4f4;
-            border-radius: 5px;
-            min-height: 44px;
-            padding: 10px;
-            white-space: pre-wrap;
+        .pulse-mint {
+            animation: pulse-mint 2s infinite;
         }
 
-        .status {
-            color: #155724;
-            font-weight: bold;
+        @keyframes pulse-mint {
+            0% { box-shadow: 0 0 0 0 rgba(0, 218, 243, 0.45); }
+            70% { box-shadow: 0 0 0 12px rgba(0, 218, 243, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(0, 218, 243, 0); }
         }
+
+        .nav-button.active {
+            background: #d8e2ff;
+            color: #001a41;
+            font-weight: 700;
+        }
+
+        .view {
+            display: none;
+        }
+
+        .view.active {
+            display: block;
+        }
+
     </style>
 </head>
-<body>
+<body class="font-sans text-on-surface medical-grid-bg">
+    <header class="sticky top-0 z-40 border-b border-white/40 bg-white/80 backdrop-blur-xl">
+        <div class="mx-auto flex max-w-[1440px] items-center justify-between px-6 py-4">
+            <div class="flex items-center gap-3">
+                <span class="material-symbols-outlined text-primary text-3xl">account_balance</span>
+                <div>
+                    <h1 class="text-xl font-bold text-primary">Secretaria de Salud</h1>
+                    <p class="text-xs font-semibold uppercase tracking-wider text-on-surface-variant">Expediente Clinico Electronico Nacional</p>
+                </div>
+            </div>
+            <div class="flex items-center gap-4">
+                <button id="logoutButton" class="rounded-xl bg-primary px-3 py-2 text-xs font-bold text-white">Cerrar sesion</button>
+                <span class="material-symbols-outlined text-primary">security</span>
+            </div>
+        </div>
+    </header>
 
-<div class="container">
-    <h2>Consulta de Expediente Clinico</h2>
+    <main class="mx-auto grid max-w-[1440px] grid-cols-1 gap-6 px-6 py-6 lg:grid-cols-[300px_1fr]">
+        <aside class="glass-panel rounded-2xl p-5 lg:sticky lg:top-24 lg:h-[calc(100vh-120px)] lg:overflow-y-auto">
+            <section class="border-b border-slate-200 pb-5">
+                <p class="text-xs font-bold uppercase tracking-widest text-secondary">Sesion validada</p>
+                <h2 class="mt-1 text-lg font-bold text-primary">Personal medico</h2>
+                <div class="mt-4 rounded-2xl bg-surface-container-low p-4">
+                    <div class="flex items-center gap-3">
+                        <div class="flex h-12 w-12 items-center justify-center rounded-xl bg-primary text-white">
+                            <span class="material-symbols-outlined">fingerprint</span>
+                        </div>
+                        <div>
+                            <p class="font-bold text-primary">Acceso autorizado</p>
+                        <p class="text-xs text-on-surface-variant">Sesion activa para consulta</p>
+                        </div>
+                    </div>
+                </div>
+            </section>
 
-    <h3>Login</h3>
-    <label for="usuarioInput">Usuario:</label>
-    <input type="text" id="usuarioInput" value="admin">
+            <section class="mt-5">
+                <div class="flex items-center justify-between">
+                    <h3 class="text-sm font-bold uppercase tracking-widest text-primary">Pacientes</h3>
+                    <button id="refreshButton" class="rounded-lg bg-surface-container px-3 py-1 text-xs font-bold text-primary">Actualizar</button>
+                </div>
+                <div id="patientList" class="mt-4 space-y-3">
+                    <p class="text-sm text-on-surface-variant">Cargando expedientes...</p>
+                </div>
+            </section>
+        </aside>
 
-    <label for="passwordInput">Contrasena:</label>
-    <input type="password" id="passwordInput" value="1234">
+        <section class="space-y-6">
+            <section class="glass-panel rounded-2xl p-5">
+                <div class="flex flex-col gap-4 xl:flex-row xl:items-center xl:justify-between">
+                    <div>
+                        <p class="text-xs font-bold uppercase tracking-widest text-secondary">Panel de consulta medica integral</p>
+                        <h2 id="patientTitle" class="mt-1 text-3xl font-bold text-primary">Consulta nacional de expedientes</h2>
+                        <p id="patientSubtitle" class="mt-1 text-sm text-on-surface-variant">Busca o selecciona un expediente clinico autorizado.</p>
+                    </div>
+                    <div class="grid gap-3 sm:grid-cols-[280px_140px]">
+                        <input id="curpInput" class="rounded-xl border-slate-200 bg-white/80 px-4 py-3 font-mono text-sm" value="OOVI970830HSRCGV01" placeholder="CURP">
+                        <button id="searchButton" class="rounded-xl bg-secondary-container px-4 py-3 font-bold text-white">Buscar CURP</button>
+                    </div>
+                </div>
+                <div id="message" class="mt-4 hidden rounded-xl px-4 py-3 text-sm font-semibold"></div>
+            </section>
 
-    <button onclick="login()">Iniciar sesion</button>
-    <p id="loginStatus">Sin sesion iniciada.</p>
+            <section id="emptyState" class="glass-panel rounded-2xl p-10 text-center">
+                <span class="material-symbols-outlined text-5xl text-secondary">clinical_notes</span>
+                <h3 class="mt-3 text-xl font-bold text-primary">Expediente listo para consulta</h3>
+                <p class="mt-2 text-on-surface-variant">Cargando datos del expediente clinico.</p>
+            </section>
 
-    <h3>Buscar expediente</h3>
-    <label for="curpInput">Ingrese CURP del Paciente:</label>
-    <input type="text" id="curpInput" value="TEST010101HSONXX01">
-    <button onclick="consultarExpediente()">Buscar Expediente</button>
+            <section id="dashboard" class="hidden space-y-6">
+                <div class="grid gap-6 xl:grid-cols-[1fr_360px]">
+                    <article class="glass-panel rounded-2xl p-5">
+                        <div class="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+                            <div class="flex items-center gap-4">
+                                <div class="relative flex h-20 w-20 items-center justify-center rounded-2xl bg-primary text-3xl font-bold text-white">
+                                    <span id="patientInitials">--</span>
+                                    <span class="pulse-mint absolute -bottom-1 -right-1 h-5 w-5 rounded-full border-2 border-white bg-tertiary-fixed-dim"></span>
+                                </div>
+                                <div>
+                                    <h3 id="identityName" class="text-2xl font-bold text-primary">Paciente</h3>
+                                    <div id="identityBadges" class="mt-2 flex flex-wrap gap-2"></div>
+                                </div>
+                            </div>
+                            <div class="flex flex-wrap gap-2">
+                                <button id="newNoteButton" class="rounded-xl bg-primary px-4 py-3 text-sm font-bold text-white">
+                                    <span class="material-symbols-outlined text-base">add</span>
+                                    Nueva nota
+                                </button>
+                                <button id="requestAccessButton" class="rounded-xl border border-slate-200 bg-white/70 px-4 py-3 text-sm font-bold text-primary">
+                                    <span class="material-symbols-outlined text-base">fingerprint</span>
+                                    Solicitar acceso
+                                </button>
+                            </div>
+                        </div>
+                    </article>
 
-    <h3>Resultado:</h3>
-    <pre id="resultado">Esperando consulta...</pre>
-</div>
+                    <article class="glass-panel rounded-2xl p-5">
+                        <p class="text-xs font-bold uppercase tracking-widest text-secondary">Autorizacion activa</p>
+                        <div id="accessCard" class="mt-3"></div>
+                    </article>
+                </div>
 
-<script>
-    const API_URL = "http://localhost:8080";
-    let token = "";
+                <nav class="glass-panel flex flex-wrap gap-2 rounded-2xl p-3">
+                    <button class="nav-button active rounded-xl px-4 py-2 text-sm" data-view="resumen">Resumen</button>
+                    <button class="nav-button rounded-xl px-4 py-2 text-sm" data-view="consultas">Historial clinico</button>
+                    <button class="nav-button rounded-xl px-4 py-2 text-sm" onclick="abrirPantalla('archivos.html')">Archivos e imagenes</button>
+                    <button class="nav-button rounded-xl px-4 py-2 text-sm" data-view="permisos">Permisos</button>
+                    <button class="nav-button rounded-xl px-4 py-2 text-sm" data-view="seguridad">Seguridad</button>
+                </nav>
 
-    async function login() {
-        const username = document.getElementById("usuarioInput").value;
-        const password = document.getElementById("passwordInput").value;
-        const loginStatus = document.getElementById("loginStatus");
+                <section id="notePanel" class="glass-panel hidden rounded-2xl p-5">
+                    <div class="flex flex-col gap-2 md:flex-row md:items-center md:justify-between">
+                        <div>
+                            <p class="text-xs font-bold uppercase tracking-widest text-secondary">Registro medico</p>
+                            <h3 class="text-xl font-bold text-primary">Agregar nota clinica</h3>
+                        </div>
+                        <button id="closeNoteButton" class="rounded-xl border border-slate-200 bg-white px-4 py-2 text-sm font-bold text-primary">Cerrar</button>
+                    </div>
+                    <div class="mt-4 grid gap-4 md:grid-cols-2">
+                        <label class="block">
+                            <span class="text-xs font-bold uppercase tracking-wider text-on-surface-variant">Diagnostico</span>
+                            <input id="noteDiagnosis" class="mt-2 w-full rounded-xl border-slate-200 bg-white/80 px-4 py-3" placeholder="Ej. Revision general">
+                        </label>
+                        <label class="block">
+                            <span class="text-xs font-bold uppercase tracking-wider text-on-surface-variant">Tratamiento</span>
+                            <input id="noteTreatment" class="mt-2 w-full rounded-xl border-slate-200 bg-white/80 px-4 py-3" placeholder="Ej. Seguimiento preventivo">
+                        </label>
+                    </div>
+                    <label class="mt-4 block">
+                        <span class="text-xs font-bold uppercase tracking-wider text-on-surface-variant">Notas</span>
+                        <textarea id="noteText" class="mt-2 w-full rounded-xl border-slate-200 bg-white/80 px-4 py-3" rows="3" placeholder="Observaciones de la consulta"></textarea>
+                    </label>
+                    <button id="saveNoteButton" class="mt-4 rounded-xl bg-secondary-container px-5 py-3 font-bold text-white">Guardar nota en expediente</button>
+                </section>
 
-        loginStatus.innerText = "Iniciando sesion...";
+                <section id="view-resumen" class="view active">
+                    <div class="grid gap-6 xl:grid-cols-[1fr_360px]">
+                        <article class="glass-panel rounded-2xl p-5">
+                            <h3 class="text-xl font-bold text-primary">Datos generales</h3>
+                            <div id="summaryGrid" class="mt-4 grid gap-4 md:grid-cols-2"></div>
+                        </article>
+                        <article class="rounded-2xl border border-error/20 bg-error-container p-5">
+                            <h3 class="text-xs font-bold uppercase tracking-widest text-error">Alergias</h3>
+                            <div id="allergyList" class="mt-4 space-y-3"></div>
+                        </article>
+                    </div>
+                </section>
 
-        try {
-            const response = await fetch(`${API_URL}/auth/login`, {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ username, password })
-            });
+                <section id="view-consultas" class="view">
+                    <article class="glass-panel rounded-2xl p-5">
+                        <h3 class="text-xl font-bold text-primary">Historial clinico</h3>
+                        <div id="consultationList" class="mt-4 space-y-4"></div>
+                    </article>
+                </section>
 
-            if (!response.ok) {
-                token = "";
-                loginStatus.innerText = "Credenciales invalidas.";
-                return;
-            }
+                <section id="view-permisos" class="view">
+                    <article class="glass-panel rounded-2xl p-5">
+                        <h3 class="text-xl font-bold text-primary">Gestion de permisos y accesos</h3>
+                        <div id="permissionPanel" class="mt-4 grid gap-4 xl:grid-cols-2"></div>
+                    </article>
+                </section>
 
-            token = await response.text();
-            loginStatus.className = "status";
-            loginStatus.innerText = "Sesion iniciada correctamente.";
-        } catch (error) {
-            token = "";
-            loginStatus.innerText = `Error de conexion: ${error.message}`;
-        }
-    }
+                <section id="view-seguridad" class="view">
+                    <div class="grid gap-6 xl:grid-cols-[1fr_360px]">
+                        <article class="glass-panel rounded-2xl p-5">
+                            <div class="flex items-center justify-between">
+                                <div>
+                                    <p class="text-xs font-bold uppercase tracking-widest text-secondary">Infraestructura de nube segura</p>
+                                    <h3 class="mt-1 text-2xl font-bold text-primary">Red de resiliencia nacional</h3>
+                                </div>
+                                <span class="rounded-full bg-primary px-3 py-1 text-xs font-bold text-white">Sincronizado</span>
+                            </div>
+                            <div class="mt-6 grid gap-4 md:grid-cols-3">
+                                <div class="rounded-2xl bg-surface-container-low p-4">
+                                    <p class="text-xs font-bold uppercase text-on-surface-variant">Servicios clinicos</p>
+                                    <p class="mt-2 font-mono text-sm text-primary">Consulta nacional</p>
+                                </div>
+                                <div class="rounded-2xl bg-surface-container-low p-4">
+                                    <p class="text-xs font-bold uppercase text-on-surface-variant">Base de datos</p>
+                                    <p class="mt-2 font-mono text-sm text-primary">Repositorio nacional</p>
+                                </div>
+                                <div class="rounded-2xl bg-surface-container-low p-4">
+                                    <p class="text-xs font-bold uppercase text-on-surface-variant">Autenticacion</p>
+                                    <p class="mt-2 font-mono text-sm text-primary">Sesion segura + perfil autorizado</p>
+                                </div>
+                            </div>
+                        </article>
+                        <article class="rounded-2xl bg-primary p-5 text-white">
+                            <span class="material-symbols-outlined text-5xl text-tertiary-fixed-dim">fingerprint</span>
+                            <h3 class="mt-4 text-xl font-bold">Verificacion biometrica</h3>
+                            <p class="mt-2 text-sm text-white/70">La demo representa autorizacion por huella, reconocimiento facial y trazabilidad de accesos.</p>
+                        </article>
+                    </div>
+                </section>
+            </section>
+        </section>
+    </main>
 
-    async function consultarExpediente() {
-        const curp = document.getElementById("curpInput").value.trim();
-        const resultadoDiv = document.getElementById("resultado");
+    <script>
+        const API_URL = "http://localhost:8080";
+        let token = sessionStorage.getItem("eceToken") || "";
+        let role = sessionStorage.getItem("eceRole") || "";
+        let expedientes = [];
+        let expedienteActual = null;
+        const params = new URLSearchParams(window.location.search);
+        const initialCurp = params.get("curp");
+        const initialView = params.get("view");
+
+        const $ = (id) => document.getElementById(id);
+
+        $("refreshButton").addEventListener("click", cargarExpedientes);
+        $("searchButton").addEventListener("click", consultarPorCurp);
+        $("logoutButton").addEventListener("click", cerrarSesion);
+        $("requestAccessButton").addEventListener("click", solicitarAcceso);
+        $("newNoteButton").addEventListener("click", abrirNotaClinica);
+        $("closeNoteButton").addEventListener("click", cerrarNotaClinica);
+        $("saveNoteButton").addEventListener("click", guardarNotaClinica);
+        document.querySelectorAll(".nav-button").forEach((button) => {
+            button.addEventListener("click", () => cambiarVista(button.dataset.view));
+        });
 
         if (!token) {
-            resultadoDiv.innerText = "Primero inicia sesion.";
-            return;
+            window.location.href = "login.html";
+        } else if (role === "Patient") {
+            window.location.href = "paciente.html";
+        } else {
+            if (initialCurp) {
+                $("curpInput").value = initialCurp;
+            }
+            cargarExpedientes();
         }
 
-        if (!curp) {
-            resultadoDiv.innerText = "Por favor ingrese un CURP.";
-            return;
+        function setMessage(text, type = "ok") {
+            const message = $("message");
+            message.textContent = text;
+            message.className = type === "error"
+                ? "mt-4 rounded-xl bg-error-container px-4 py-3 text-sm font-semibold text-error"
+                : "mt-4 rounded-xl bg-emerald-100 px-4 py-3 text-sm font-semibold text-emerald-800";
         }
 
-        resultadoDiv.innerText = "Consultando...";
+        function clearMessage() {
+            $("message").className = "mt-4 hidden rounded-xl px-4 py-3 text-sm font-semibold";
+            $("message").textContent = "";
+        }
 
-        try {
-            const response = await fetch(`${API_URL}/api/expedientes/${curp}`, {
+        async function apiGet(path) {
+            if (!token) {
+                throw new Error("Primero inicia sesion.");
+            }
+
+            const response = await fetch(`${API_URL}${path}`, {
                 headers: { Authorization: `Bearer ${token}` }
             });
 
-            if (response.ok) {
-                const data = await response.json();
-                resultadoDiv.innerText = JSON.stringify(data, null, 2);
-            } else if (response.status === 404) {
-                resultadoDiv.innerText = "Expediente no encontrado.";
-            } else if (response.status === 401 || response.status === 403) {
-                resultadoDiv.innerText = "No autorizado. Inicia sesion otra vez.";
-            } else {
-                resultadoDiv.innerText = `Error en el servidor: ${response.status}`;
+            if (response.status === 401 || response.status === 403) {
+                throw new Error("No autorizado. Inicia sesion otra vez.");
             }
-        } catch (error) {
-            resultadoDiv.innerText = `Error de conexion: ${error.message}`;
-        }
-    }
-</script>
 
+            if (!response.ok) {
+                throw new Error(`Error del servidor: ${response.status}`);
+            }
+
+            return response.json();
+        }
+
+        async function apiPost(path, body = null) {
+            if (!token) {
+                throw new Error("Primero inicia sesion.");
+            }
+
+            const response = await fetch(`${API_URL}${path}`, {
+                method: "POST",
+                headers: {
+                    Authorization: `Bearer ${token}`,
+                    "Content-Type": "application/json"
+                },
+                body: body ? JSON.stringify(body) : null
+            });
+
+            if (response.status === 401 || response.status === 403) {
+                throw new Error("No autorizado. Inicia sesion otra vez.");
+            }
+
+            if (!response.ok) {
+                const text = await response.text();
+                throw new Error(text || `Error del servidor: ${response.status}`);
+            }
+
+            return response.json();
+        }
+
+        function cerrarSesion() {
+            sessionStorage.removeItem("eceToken");
+            sessionStorage.removeItem("eceRole");
+            sessionStorage.removeItem("eceName");
+            sessionStorage.removeItem("eceCurp");
+            sessionStorage.removeItem("eceCedula");
+            sessionStorage.removeItem("eceEspecialidad");
+            sessionStorage.removeItem("eceInstitucion");
+            sessionStorage.removeItem("eceActorRole");
+            window.location.href = "login.html";
+        }
+
+        async function cargarExpedientes() {
+            clearMessage();
+            const list = $("patientList");
+
+            if (!token) {
+                list.innerHTML = '<p class="text-sm text-on-surface-variant">Inicia sesion para cargar expedientes.</p>';
+                return;
+            }
+
+            list.innerHTML = '<p class="text-sm text-on-surface-variant">Cargando expedientes autorizados...</p>';
+
+            try {
+                expedientes = await apiGet("/api/expedientes");
+                renderPacientes();
+
+                if (expedientes.length > 0) {
+                    const curpSeleccionada = initialCurp || expedientes[0].curpPaciente;
+                    seleccionarPaciente(curpSeleccionada);
+                    if (initialView) {
+                        cambiarVista(initialView);
+                    }
+                } else {
+                    $("emptyState").classList.remove("hidden");
+                    $("dashboard").classList.add("hidden");
+                    setMessage("No hay expedientes disponibles para consulta.", "error");
+                }
+            } catch (error) {
+                list.innerHTML = '<p class="text-sm text-error">No se pudieron cargar expedientes.</p>';
+                setMessage(error.message, "error");
+            }
+        }
+
+        async function consultarPorCurp() {
+            clearMessage();
+            const curp = $("curpInput").value.trim();
+
+            if (!curp) {
+                setMessage("Escribe una CURP para buscar.", "error");
+                return;
+            }
+
+            try {
+                expedienteActual = await apiGet(`/api/expedientes/${encodeURIComponent(curp)}`);
+                renderExpediente();
+                renderPacientes();
+            } catch (error) {
+                setMessage(error.message, "error");
+            }
+        }
+
+        function renderPacientes() {
+            if (expedientes.length === 0) {
+                $("patientList").innerHTML = '<p class="text-sm text-on-surface-variant">Sin expedientes.</p>';
+                return;
+            }
+
+            $("patientList").innerHTML = expedientes.map((exp) => `
+                <button class="w-full rounded-2xl border p-4 text-left transition hover:bg-white ${expedienteActual?.curpPaciente === exp.curpPaciente ? "border-secondary bg-blue-50" : "border-white/60 bg-white/50"}"
+                        onclick="seleccionarPaciente('${exp.curpPaciente}')">
+                    <span class="block font-bold text-primary">${exp.nombreCompleto}</span>
+                    <span class="mt-1 block font-mono text-xs text-on-surface-variant">${exp.curpPaciente}</span>
+                    <span class="mt-2 inline-flex rounded-full bg-surface-container px-2 py-1 text-xs font-bold text-primary">${exp.tipoSangre || "S/R"}</span>
+                </button>
+            `).join("");
+        }
+
+        async function seleccionarPaciente(curp) {
+            expedienteActual = expedientes.find((exp) => exp.curpPaciente === curp);
+            if (!expedienteActual) {
+                try {
+                    expedienteActual = await apiGet(`/api/expedientes/${encodeURIComponent(curp)}`);
+                } catch (error) {
+                    setMessage(error.message, "error");
+                    return;
+                }
+            }
+            $("curpInput").value = curp;
+            renderExpediente();
+            renderPacientes();
+        }
+
+        function renderExpediente() {
+            const exp = expedienteActual;
+            $("emptyState").classList.add("hidden");
+            $("dashboard").classList.remove("hidden");
+            $("patientTitle").textContent = exp.nombreCompleto;
+            $("patientSubtitle").textContent = `${exp.curpPaciente} | ${exp.edad || "Edad no registrada"} anos | ${exp.tipoSangre || "Tipo sangre no registrado"}`;
+            $("identityName").textContent = exp.nombreCompleto;
+            $("patientInitials").textContent = getInitials(exp.nombreCompleto);
+            $("identityBadges").innerHTML = [
+                exp.curpPaciente,
+                `${exp.edad || "S/E"} anos`,
+                exp.tipoSangre || "S/R",
+                exp.biometriaPaciente?.estado || "Biometria pendiente"
+            ].map((item) => `<span class="rounded-full bg-surface-container px-3 py-1 text-xs font-bold text-primary">${item}</span>`).join("");
+
+            renderAccess(exp);
+            renderResumen(exp);
+            renderConsultas(exp);
+            renderPermisos(exp);
+        }
+
+        function getInitials(name = "") {
+            return name.split(" ").slice(0, 2).map((part) => part[0]).join("").toUpperCase() || "--";
+        }
+
+        function renderAccess(exp) {
+            const medico = exp.medicoAutorizado || {};
+            const estado = medico.estadoAcceso || "Sin solicitud";
+            const badgeClass = estado === "Autorizado"
+                ? "bg-emerald-100 text-emerald-800"
+                : estado === "Pendiente"
+                    ? "bg-amber-100 text-amber-800"
+                    : estado === "Revocado"
+                        ? "bg-error-container text-error"
+                        : "bg-surface-container text-primary";
+            $("accessCard").innerHTML = `
+                <h4 class="font-bold text-primary">${medico.nombreCompleto || "Sin medico asignado"}</h4>
+                <p class="mt-1 text-sm text-on-surface-variant">${medico.especialidad || "Especialidad no registrada"}</p>
+                <div class="mt-3 space-y-2 text-sm">
+                    <p><strong>Cedula:</strong> ${medico.cedulaProfesional || "N/A"}</p>
+                    <p><strong>Institucion:</strong> ${medico.institucion || "N/A"}</p>
+                    <p><strong>Motivo:</strong> ${medico.motivoAcceso || "N/A"}</p>
+                </div>
+                <span class="mt-4 inline-flex rounded-full px-3 py-1 text-xs font-bold ${badgeClass}">${estado}</span>
+            `;
+        }
+
+        function renderResumen(exp) {
+            const rows = [
+                ["CURP", exp.curpPaciente],
+                ["Fecha de nacimiento", exp.fechaNacimiento || "No registrada"],
+                ["Sexo", exp.sexo || "No registrado"],
+                ["Domicilio", exp.domicilio || "No registrado"],
+                ["Tipo de sangre", exp.tipoSangre || "No registrado"],
+                ["Biometria", `${exp.biometriaPaciente?.tipo || "N/A"} - ${exp.biometriaPaciente?.estado || "N/A"}`],
+                ["Tutor", exp.tutor ? `${exp.tutor.nombreCompleto} (${exp.tutor.parentesco})` : "No aplica"],
+                ["Responsable de autorizacion", exp.tutor ? `${exp.tutor.nombreCompleto} - Tutor legal` : "Paciente mayor de edad"],
+                ["Notas", exp.notasClinicas || "Sin notas"]
+            ];
+
+            $("summaryGrid").innerHTML = rows.map(([label, value]) => `
+                <div class="rounded-2xl bg-surface-container-low p-4">
+                    <p class="text-xs font-bold uppercase tracking-wider text-on-surface-variant">${label}</p>
+                    <p class="mt-2 font-semibold text-primary">${value}</p>
+                </div>
+            `).join("");
+
+            const allergies = exp.alergias || [];
+            $("allergyList").innerHTML = allergies.length
+                ? allergies.map((a) => `<div class="rounded-xl bg-white/70 p-3 font-bold text-error">${a}</div>`).join("")
+                : '<p class="text-sm text-on-surface-variant">Sin alergias registradas.</p>';
+        }
+
+        function renderConsultas(exp) {
+            const consultas = exp.consultas || [];
+            $("consultationList").innerHTML = consultas.length ? consultas.map((c) => `
+                <article class="rounded-2xl border border-slate-200 bg-white/70 p-4">
+                    <div class="flex flex-col gap-2 md:flex-row md:items-start md:justify-between">
+                        <div>
+                            <h4 class="font-bold text-primary">${c.diagnostico}</h4>
+                            <p class="text-sm text-on-surface-variant">${c.medico} | ${c.cedulaProfesional}</p>
+                        </div>
+                        <span class="rounded-full bg-surface-container px-3 py-1 text-xs font-bold text-primary">${c.fecha}</span>
+                    </div>
+                    <p class="mt-3 text-sm"><strong>Tratamiento:</strong> ${c.tratamiento}</p>
+                    <p class="mt-2 text-sm text-on-surface-variant">${c.notas}</p>
+                </article>
+            `).join("") : '<p class="text-sm text-on-surface-variant">Sin consultas registradas.</p>';
+        }
+
+        function renderPermisos(exp) {
+            const accesos = exp.historialAccesos || [];
+            const medico = exp.medicoAutorizado || {};
+            const estado = medico.estadoAcceso || "Sin solicitud";
+            $("permissionPanel").innerHTML = `
+                <div class="rounded-2xl border border-slate-200 bg-white/70 p-4">
+                    <h4 class="font-bold text-primary">Solicitud de acceso vigente</h4>
+                    <p class="mt-2 text-sm text-on-surface-variant">Medico autorizado: ${medico.nombreCompleto || "N/A"}</p>
+                    <p class="mt-1 text-sm text-on-surface-variant">Estado: ${estado}</p>
+                    <p class="mt-1 text-sm text-on-surface-variant">Vigencia: ${medico.accesoDesde || "N/A"} a ${medico.accesoHasta || "N/A"}</p>
+                    <button onclick="solicitarAcceso()" class="mt-4 rounded-xl bg-primary px-4 py-2 text-sm font-bold text-white">Solicitar acceso al paciente</button>
+                </div>
+                <div class="space-y-3">
+                    ${accesos.map((a) => `
+                        <div class="rounded-2xl bg-surface-container-low p-4">
+                            <p class="font-bold text-primary">${a.accion}</p>
+                            <p class="text-sm text-on-surface-variant">${a.actor} | ${a.rol}</p>
+                            <p class="mt-1 text-xs font-mono text-on-surface-variant">${a.fechaHora}</p>
+                            <span class="mt-2 inline-flex rounded-full bg-emerald-100 px-2 py-1 text-xs font-bold text-emerald-800">${a.resultado}</span>
+                        </div>
+                    `).join("")}
+                </div>
+            `;
+        }
+
+        function cambiarVista(view) {
+            document.querySelectorAll(".nav-button").forEach((button) => {
+                button.classList.toggle("active", button.dataset.view === view);
+            });
+            document.querySelectorAll(".view").forEach((section) => {
+                section.classList.toggle("active", section.id === `view-${view}`);
+            });
+        }
+
+        function abrirPantalla(path) {
+            const curp = expedienteActual?.curpPaciente || $("curpInput").value.trim();
+            const params = curp ? `?curp=${encodeURIComponent(curp)}` : "";
+            window.location.href = `${path}${params}`;
+        }
+
+        function abrirNotaClinica() {
+            if (!expedienteActual) {
+                setMessage("Primero selecciona un paciente.", "error");
+                return;
+            }
+
+            $("notePanel").classList.remove("hidden");
+            $("noteDiagnosis").focus();
+        }
+
+        function cerrarNotaClinica() {
+            $("notePanel").classList.add("hidden");
+            $("noteDiagnosis").value = "";
+            $("noteTreatment").value = "";
+            $("noteText").value = "";
+        }
+
+        async function guardarNotaClinica() {
+            if (!expedienteActual) {
+                setMessage("Primero selecciona un paciente.", "error");
+                return;
+            }
+
+            const diagnostico = $("noteDiagnosis").value.trim();
+            if (!diagnostico) {
+                setMessage("Escribe el diagnostico para guardar la nota.", "error");
+                return;
+            }
+
+            const button = $("saveNoteButton");
+            button.disabled = true;
+            button.textContent = "Guardando nota...";
+
+            try {
+                const actualizado = await apiPost(`/api/expedientes/${encodeURIComponent(expedienteActual.curpPaciente)}/notas`, {
+                    medico: sessionStorage.getItem("eceName") || "Dra. Sofia Martinez",
+                    cedulaProfesional: sessionStorage.getItem("eceCedula") || "CED-928374",
+                    diagnostico,
+                    tratamiento: $("noteTreatment").value.trim(),
+                    notas: $("noteText").value.trim()
+                });
+
+                expedienteActual = actualizado;
+                expedientes = expedientes.map((exp) => exp.curpPaciente === actualizado.curpPaciente ? actualizado : exp);
+                renderExpediente();
+                cerrarNotaClinica();
+                cambiarVista("consultas");
+                setMessage("Nota clinica guardada en el expediente.", "ok");
+            } catch (error) {
+                setMessage(error.message, "error");
+            } finally {
+                button.disabled = false;
+                button.textContent = "Guardar nota en expediente";
+            }
+        }
+
+        async function solicitarAcceso() {
+            if (!expedienteActual) {
+                setMessage("Primero selecciona un paciente.", "error");
+                return;
+            }
+
+            clearMessage();
+            const button = $("requestAccessButton");
+            button.disabled = true;
+            button.textContent = "Enviando solicitud...";
+
+            try {
+                const actualizado = await apiPost(`/api/expedientes/${encodeURIComponent(expedienteActual.curpPaciente)}/solicitar-acceso`, {
+                    nombreMedico: sessionStorage.getItem("eceName") || "Dra. Sofia Martinez",
+                    cedulaProfesional: sessionStorage.getItem("eceCedula") || "CED-928374",
+                    especialidad: sessionStorage.getItem("eceEspecialidad") || "Medicina general",
+                    institucion: sessionStorage.getItem("eceInstitucion") || "Hospital General de Hermosillo",
+                    motivoAcceso: "Cita medica programada"
+                });
+
+                expedienteActual = actualizado;
+                expedientes = expedientes.map((exp) => exp.curpPaciente === actualizado.curpPaciente ? actualizado : exp);
+                renderExpediente();
+                renderPacientes();
+                setMessage("Solicitud enviada al paciente. Ahora puede autorizarla con biometria.", "ok");
+            } catch (error) {
+                setMessage(error.message, "error");
+            } finally {
+                button.disabled = false;
+                button.innerHTML = '<span class="material-symbols-outlined text-base">fingerprint</span> Solicitar acceso';
+            }
+        }
+    </script>
 </body>
 </html>

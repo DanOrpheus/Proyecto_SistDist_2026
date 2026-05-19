@@ -1,0 +1,466 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gestion de Archivos e Imagenes - ECE</title>
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&family=JetBrains+Mono&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: "#000a1e",
+                        "primary-container": "#002147",
+                        secondary: "#0059bb",
+                        "secondary-container": "#0070ea",
+                        "tertiary-fixed-dim": "#00daf3",
+                        surface: "#faf9fd",
+                        "surface-container": "#efedf1",
+                        "surface-container-low": "#f4f3f7",
+                        "on-surface": "#1a1b1e",
+                        "on-surface-variant": "#44474e",
+                        error: "#ba1a1a",
+                        "error-container": "#ffdad6"
+                    },
+                    fontFamily: {
+                        sans: ["Inter", "sans-serif"],
+                        mono: ["JetBrains Mono", "monospace"]
+                    }
+                }
+            }
+        };
+    </script>
+    <style>
+        body {
+            min-height: 100vh;
+            background:
+                radial-gradient(circle at 12% 10%, rgba(0, 112, 234, 0.12), transparent 28%),
+                radial-gradient(circle at 85% 20%, rgba(0, 218, 243, 0.14), transparent 26%),
+                #faf9fd;
+        }
+
+        .glass-panel {
+            background: rgba(255, 255, 255, 0.82);
+            border: 1px solid rgba(255, 255, 255, 0.58);
+            box-shadow: 0 24px 60px rgba(0, 10, 30, 0.08);
+            backdrop-filter: blur(20px);
+        }
+
+        .medical-grid-bg {
+            background-image: radial-gradient(circle at 2px 2px, rgba(0, 10, 30, 0.07) 1px, transparent 0);
+            background-size: 32px 32px;
+        }
+
+        .material-symbols-outlined {
+            font-variation-settings: "FILL" 0, "wght" 400, "GRAD" 0, "opsz" 24;
+            vertical-align: middle;
+        }
+
+        .scanline {
+            animation: scanline 3.5s linear infinite;
+            background: linear-gradient(to bottom, transparent, rgba(0, 218, 243, 0.42), transparent);
+            height: 110px;
+            left: 0;
+            position: absolute;
+            right: 0;
+            top: -120px;
+        }
+
+        @keyframes scanline {
+            0% { transform: translateY(0); }
+            100% { transform: translateY(520px); }
+        }
+
+        .file-button.active {
+            border-color: #0070ea;
+            background: #d8e2ff;
+        }
+
+        .nav-button.active {
+            background: #d8e2ff;
+            color: #001a41;
+            font-weight: 700;
+        }
+    </style>
+</head>
+<body class="font-sans text-on-surface medical-grid-bg">
+    <header class="sticky top-0 z-40 border-b border-white/40 bg-white/80 backdrop-blur-xl">
+        <div class="mx-auto flex max-w-[1440px] items-center justify-between px-6 py-4">
+            <div class="flex items-center gap-3">
+                <span class="material-symbols-outlined text-primary text-3xl">folder_zip</span>
+                <div>
+                    <h1 class="text-xl font-bold text-primary">Gestion de Archivos e Imagenes</h1>
+                    <p class="text-xs font-semibold uppercase tracking-wider text-on-surface-variant">Expediente Clinico Electronico Nacional</p>
+                </div>
+            </div>
+            <div class="flex items-center gap-3">
+                <a class="rounded-xl bg-surface-container px-4 py-2 text-sm font-bold text-primary" href="index.html">Volver al panel</a>
+                <button id="logoutButton" class="rounded-xl bg-primary px-3 py-2 text-xs font-bold text-white">Cerrar sesion</button>
+            </div>
+        </div>
+    </header>
+
+    <main class="mx-auto grid max-w-[1440px] grid-cols-1 gap-6 px-6 py-6 lg:grid-cols-[330px_1fr]">
+        <aside class="glass-panel rounded-2xl p-5 lg:sticky lg:top-24 lg:h-[calc(100vh-120px)] lg:overflow-y-auto">
+            <p class="text-xs font-bold uppercase tracking-widest text-secondary">Sesion validada</p>
+            <h2 class="mt-1 text-lg font-bold text-primary">Personal medico</h2>
+            <div class="mt-4 rounded-2xl bg-surface-container-low p-4">
+                <div class="flex items-center gap-3">
+                    <div class="flex h-12 w-12 items-center justify-center rounded-xl bg-primary text-white">
+                        <span class="material-symbols-outlined">fingerprint</span>
+                    </div>
+                    <div>
+                        <p class="font-bold text-primary">Acceso autorizado</p>
+                        <p class="text-xs text-on-surface-variant">Sesion activa para archivos</p>
+                    </div>
+                </div>
+            </div>
+
+            <section class="mt-6 border-t border-slate-200 pt-5">
+                <label class="block text-xs font-bold uppercase tracking-wider text-on-surface-variant" for="curpInput">CURP del paciente</label>
+                <div class="mt-2 grid gap-2">
+                    <input id="curpInput" class="rounded-xl border-slate-200 bg-white/80 px-4 py-3 font-mono text-sm" value="OOVI970830HSRCGV01">
+                    <button id="searchButton" class="rounded-xl bg-secondary-container px-4 py-3 font-bold text-white">Cargar expediente</button>
+                </div>
+            </section>
+
+            <section class="mt-6 border-t border-slate-200 pt-5">
+                <h3 class="text-sm font-bold uppercase tracking-widest text-primary">Cargar archivo clinico</h3>
+                <label class="mt-4 block text-xs font-bold uppercase tracking-wider text-on-surface-variant" for="fileNameInput">Nombre del archivo</label>
+                <input id="fileNameInput" class="mt-2 w-full rounded-xl border-slate-200 bg-white/80 px-4 py-3 text-sm" placeholder="Ej. Radiografia de torax">
+                <label class="mt-3 block text-xs font-bold uppercase tracking-wider text-on-surface-variant" for="fileDescriptionInput">Descripcion</label>
+                <textarea id="fileDescriptionInput" class="mt-2 w-full rounded-xl border-slate-200 bg-white/80 px-4 py-3 text-sm" rows="2" placeholder="Descripcion clinica breve"></textarea>
+                <input id="fileInput" type="file" accept="image/*,application/pdf" class="mt-3 block w-full text-sm text-on-surface-variant file:mr-3 file:rounded-xl file:border-0 file:bg-surface-container file:px-4 file:py-2 file:font-bold file:text-primary">
+                <button id="uploadButton" class="mt-3 w-full rounded-xl bg-primary px-4 py-3 font-bold text-white">Guardar archivo</button>
+                <p class="mt-2 text-xs text-on-surface-variant">Acepta imagenes y PDF de hasta 5 MB.</p>
+            </section>
+
+            <section class="mt-6">
+                <h3 class="text-sm font-bold uppercase tracking-widest text-primary">Archivos del paciente</h3>
+                <div id="fileList" class="mt-4 space-y-3">
+                    <p class="text-sm text-on-surface-variant">Inicia sesion para cargar archivos.</p>
+                </div>
+            </section>
+        </aside>
+
+        <section class="space-y-6">
+            <section class="glass-panel rounded-2xl p-5">
+                <p class="text-xs font-bold uppercase tracking-widest text-secondary">Gestion de archivos e imagenes</p>
+                <h2 id="patientTitle" class="mt-1 text-3xl font-bold text-primary">Selecciona un expediente</h2>
+                <p id="patientSubtitle" class="mt-1 text-sm text-on-surface-variant">Los archivos se consultan desde el expediente clinico autorizado.</p>
+                <div id="message" class="mt-4 hidden rounded-xl px-4 py-3 text-sm font-semibold"></div>
+            </section>
+
+            <nav class="glass-panel flex flex-wrap gap-2 rounded-2xl p-3">
+                <button class="nav-button rounded-xl px-4 py-2 text-sm" onclick="abrirPantalla('index.html', 'resumen')">Resumen</button>
+                <button class="nav-button rounded-xl px-4 py-2 text-sm" onclick="abrirPantalla('index.html', 'consultas')">Historial clinico</button>
+                <button class="nav-button active rounded-xl px-4 py-2 text-sm">Archivos e imagenes</button>
+                <button class="nav-button rounded-xl px-4 py-2 text-sm" onclick="abrirPantalla('index.html', 'permisos')">Permisos</button>
+                <button class="nav-button rounded-xl px-4 py-2 text-sm" onclick="abrirPantalla('index.html', 'seguridad')">Seguridad</button>
+            </nav>
+
+            <div class="grid gap-6 xl:grid-cols-[1fr_320px]">
+                <article class="rounded-2xl bg-primary p-5 text-white shadow-2xl">
+                    <div class="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
+                        <div>
+                            <p class="text-xs font-bold uppercase tracking-widest text-tertiary-fixed-dim">Visor Digital Avanzado</p>
+                            <h3 id="viewerTitle" class="mt-1 text-xl font-bold">Selecciona un archivo</h3>
+                        </div>
+                        <div class="flex gap-2">
+                            <button class="rounded-xl bg-white/10 px-3 py-2"><span class="material-symbols-outlined">zoom_in</span></button>
+                            <button class="rounded-xl bg-white/10 px-3 py-2"><span class="material-symbols-outlined">contrast</span></button>
+                            <button id="exportButton" class="rounded-xl bg-tertiary-fixed-dim px-3 py-2 text-sm font-bold text-primary">Exportar</button>
+                        </div>
+                    </div>
+
+                    <div id="viewerFrame" class="relative mt-5 flex min-h-[500px] items-center justify-center overflow-hidden rounded-2xl border border-white/10 bg-black/45 p-6">
+                        <div class="scanline"></div>
+                        <div id="viewerContent" class="relative flex min-h-[360px] w-full max-w-[760px] items-center justify-center rounded-2xl border border-cyan-300/30 bg-slate-950/80">
+                            <div class="absolute left-8 top-8 h-28 w-28 rounded-xl border-2 border-dashed border-tertiary-fixed-dim/70"></div>
+                            <div class="absolute bottom-6 left-6 font-mono text-[10px] text-white/50">SLICE: 42/120 | EXP_TIME: 120ms | KVp: 125</div>
+                            <div class="absolute right-6 top-6 rounded-lg border border-tertiary-fixed-dim/30 bg-black/40 p-3 font-mono text-[11px] text-tertiary-fixed-dim">
+                                ANALISIS: ACTIVO<br>
+                                CIFRADO: AES-256<br>
+                                ESTADO: NORMAL
+                            </div>
+                            <span id="viewerIcon" class="material-symbols-outlined text-9xl text-tertiary-fixed-dim">radiology</span>
+                        </div>
+                    </div>
+
+                    <p id="viewerDescription" class="mt-4 text-sm text-white/75">El visor muestra imagenes, PDFs y notas asociadas al expediente.</p>
+                </article>
+
+                <aside class="space-y-4">
+                    <div class="glass-panel rounded-2xl p-5">
+                        <p class="text-xs font-bold uppercase tracking-widest text-on-surface-variant">Imagenes</p>
+                        <p id="imageCount" class="mt-2 text-3xl font-bold text-primary">0</p>
+                    </div>
+                    <div class="glass-panel rounded-2xl p-5">
+                        <p class="text-xs font-bold uppercase tracking-widest text-on-surface-variant">PDFs</p>
+                        <p id="pdfCount" class="mt-2 text-3xl font-bold text-primary">0</p>
+                    </div>
+                    <div class="glass-panel rounded-2xl p-5">
+                        <p class="text-xs font-bold uppercase tracking-widest text-on-surface-variant">Validacion</p>
+                        <p class="mt-2 text-sm font-bold text-emerald-700">Integridad verificada</p>
+                        <p class="mt-2 text-sm text-on-surface-variant">Metadatos protegidos mediante sesion segura y autorizacion medica.</p>
+                    </div>
+                </aside>
+            </div>
+        </section>
+    </main>
+
+    <script>
+        const API_URL = "http://localhost:8080";
+        let token = sessionStorage.getItem("eceToken") || "";
+        let role = sessionStorage.getItem("eceRole") || "";
+        let expedienteActual = null;
+        let archivosActuales = [];
+
+        const $ = (id) => document.getElementById(id);
+
+        $("searchButton").addEventListener("click", cargarExpediente);
+        $("logoutButton").addEventListener("click", cerrarSesion);
+        $("uploadButton").addEventListener("click", guardarArchivo);
+        $("exportButton").addEventListener("click", exportarArchivo);
+
+        const params = new URLSearchParams(window.location.search);
+        const initialCurp = params.get("curp");
+        if (initialCurp) $("curpInput").value = initialCurp;
+
+        if (!token) {
+            window.location.href = "login.html";
+        } else if (role === "Patient") {
+            window.location.href = "paciente.html";
+        } else {
+            cargarExpediente();
+        }
+
+        function setMessage(text, type = "ok") {
+            const message = $("message");
+            message.textContent = text;
+            message.className = type === "error"
+                ? "mt-4 rounded-xl bg-error-container px-4 py-3 text-sm font-semibold text-error"
+                : "mt-4 rounded-xl bg-emerald-100 px-4 py-3 text-sm font-semibold text-emerald-800";
+        }
+
+        function clearMessage() {
+            $("message").className = "mt-4 hidden rounded-xl px-4 py-3 text-sm font-semibold";
+            $("message").textContent = "";
+        }
+
+        async function cargarExpediente() {
+            clearMessage();
+            const curp = $("curpInput").value.trim();
+
+            if (!token) {
+                setMessage("Primero inicia sesion.", "error");
+                return;
+            }
+
+            if (!curp) {
+                setMessage("Escribe una CURP.", "error");
+                return;
+            }
+
+            try {
+                const response = await fetch(`${API_URL}/api/expedientes/${encodeURIComponent(curp)}`, {
+                    headers: { Authorization: `Bearer ${token}` }
+                });
+
+                if (!response.ok) {
+                    throw new Error(`No se pudo cargar el expediente: ${response.status}`);
+                }
+
+                expedienteActual = await response.json();
+                renderExpediente();
+            } catch (error) {
+                setMessage(error.message, "error");
+            }
+        }
+
+        function renderExpediente() {
+            $("patientTitle").textContent = expedienteActual.nombreCompleto;
+            $("patientSubtitle").textContent = `${expedienteActual.curpPaciente} | ${expedienteActual.tipoSangre || "Tipo sangre no registrado"}`;
+            renderArchivos();
+        }
+
+        function renderArchivos() {
+            archivosActuales = [
+                ...(expedienteActual.imagenes || []).map((file) => ({ ...file, categoria: "Imagen" })),
+                ...(expedienteActual.documentosPdf || []).map((file) => ({ ...file, categoria: "PDF" }))
+            ];
+
+            $("imageCount").textContent = (expedienteActual.imagenes || []).length;
+            $("pdfCount").textContent = (expedienteActual.documentosPdf || []).length;
+
+            $("fileList").innerHTML = archivosActuales.length ? archivosActuales.map((file, index) => `
+                <button id="file-${index}" class="file-button w-full rounded-2xl border border-white/60 bg-white/70 p-4 text-left hover:border-secondary"
+                        onclick="seleccionarArchivo(${index})">
+                    <div class="flex gap-3">
+                        <div class="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-surface-container">
+                            <span class="material-symbols-outlined text-secondary">${iconoArchivo(file)}</span>
+                        </div>
+                        <div>
+                            <p class="font-bold text-primary">${file.nombre}</p>
+                            <p class="text-sm text-on-surface-variant">${file.tipo} | ${file.fecha}</p>
+                            <span class="mt-2 inline-flex rounded-full bg-white/70 px-2 py-1 text-xs font-bold text-primary">${file.categoria}</span>
+                        </div>
+                    </div>
+                </button>
+            `).join("") : '<p class="text-sm text-on-surface-variant">Sin archivos registrados.</p>';
+
+            if (archivosActuales.length) {
+                seleccionarArchivo(0);
+            } else {
+                $("viewerTitle").textContent = "Sin archivos";
+                $("viewerDescription").textContent = "Carga una imagen o PDF para visualizarlo aqui.";
+                renderPlaceholder("folder_open");
+            }
+        }
+
+        function seleccionarArchivo(index) {
+            const file = archivosActuales[index];
+            if (!file) return;
+            document.querySelectorAll(".file-button").forEach((button) => button.classList.remove("active"));
+            $(`file-${index}`)?.classList.add("active");
+            $("viewerTitle").textContent = file.nombre;
+            $("viewerDescription").textContent = `${file.descripcion || "Archivo clinico del expediente."} ${file.tamanoBytes ? `Tamano: ${Math.round(file.tamanoBytes / 1024)} KB.` : ""}`;
+
+            if (file.dataUrl && (file.mimeType || "").startsWith("image/")) {
+                $("viewerContent").innerHTML = `<img src="${file.dataUrl}" alt="${file.nombre}" class="max-h-[460px] w-full rounded-xl object-contain">`;
+                return;
+            }
+
+            if (file.dataUrl && file.mimeType === "application/pdf") {
+                $("viewerContent").innerHTML = `<iframe src="${file.dataUrl}" title="${file.nombre}" class="h-[500px] w-full rounded-xl bg-white"></iframe>`;
+                return;
+            }
+
+            renderPlaceholder(iconoArchivo(file));
+        }
+
+        function iconoArchivo(file) {
+            if (file.categoria === "PDF" || file.mimeType === "application/pdf") return "picture_as_pdf";
+            if ((file.tipo || "").toLowerCase().includes("electro")) return "ecg_heart";
+            return "radiology";
+        }
+
+        function renderPlaceholder(icon) {
+            $("viewerContent").innerHTML = `
+                <div class="absolute left-8 top-8 h-28 w-28 rounded-xl border-2 border-dashed border-tertiary-fixed-dim/70"></div>
+                <div class="absolute bottom-6 left-6 font-mono text-[10px] text-white/50">SLICE: 42/120 | EXP_TIME: 120ms | KVp: 125</div>
+                <div class="absolute right-6 top-6 rounded-lg border border-tertiary-fixed-dim/30 bg-black/40 p-3 font-mono text-[11px] text-tertiary-fixed-dim">
+                    ANALISIS: ACTIVO<br>
+                    CIFRADO: AES-256<br>
+                    ESTADO: NORMAL
+                </div>
+                <span id="viewerIcon" class="material-symbols-outlined text-9xl text-tertiary-fixed-dim">${icon}</span>
+            `;
+        }
+
+        async function guardarArchivo() {
+            if (!expedienteActual) {
+                setMessage("Primero carga un expediente.", "error");
+                return;
+            }
+
+            const file = $("fileInput").files[0];
+            if (!file) {
+                setMessage("Selecciona una imagen o PDF.", "error");
+                return;
+            }
+
+            if (!file.type.startsWith("image/") && file.type !== "application/pdf") {
+                setMessage("Solo se permiten imagenes y PDF.", "error");
+                return;
+            }
+
+            if (file.size > 5 * 1024 * 1024) {
+                setMessage("El archivo supera el limite de 5 MB.", "error");
+                return;
+            }
+
+            const button = $("uploadButton");
+            button.disabled = true;
+            button.textContent = "Guardando archivo...";
+
+            try {
+                const dataUrl = await leerArchivo(file);
+                const response = await fetch(`${API_URL}/api/expedientes/${encodeURIComponent(expedienteActual.curpPaciente)}/archivos`, {
+                    method: "POST",
+                    headers: {
+                        Authorization: `Bearer ${token}`,
+                        "Content-Type": "application/json"
+                    },
+                    body: JSON.stringify({
+                        nombre: $("fileNameInput").value.trim() || file.name,
+                        descripcion: $("fileDescriptionInput").value.trim() || "Archivo clinico cargado al expediente.",
+                        tipo: file.type.startsWith("image/") ? "Imagenologia" : "Documento clinico",
+                        mimeType: file.type,
+                        dataUrl,
+                        tamanoBytes: file.size
+                    })
+                });
+
+                if (!response.ok) {
+                    throw new Error(await response.text() || "No se pudo guardar el archivo.");
+                }
+
+                expedienteActual = await response.json();
+                $("fileInput").value = "";
+                $("fileNameInput").value = "";
+                $("fileDescriptionInput").value = "";
+                renderExpediente();
+                setMessage("Archivo guardado y asociado al expediente.", "ok");
+            } catch (error) {
+                setMessage(error.message, "error");
+            } finally {
+                button.disabled = false;
+                button.textContent = "Guardar archivo";
+            }
+        }
+
+        function leerArchivo(file) {
+            return new Promise((resolve, reject) => {
+                const reader = new FileReader();
+                reader.onload = () => resolve(reader.result);
+                reader.onerror = () => reject(new Error("No se pudo leer el archivo."));
+                reader.readAsDataURL(file);
+            });
+        }
+
+        function exportarArchivo() {
+            const activeIndex = archivosActuales.findIndex((_, index) => $(`file-${index}`)?.classList.contains("active"));
+            const file = archivosActuales[activeIndex];
+            if (!file?.dataUrl) {
+                setMessage("Este archivo no tiene contenido descargable cargado.", "error");
+                return;
+            }
+
+            const link = document.createElement("a");
+            link.href = file.dataUrl;
+            link.download = file.nombre || "archivo-clinico";
+            link.click();
+        }
+
+        function cerrarSesion() {
+            sessionStorage.removeItem("eceToken");
+            sessionStorage.removeItem("eceRole");
+            sessionStorage.removeItem("eceName");
+            sessionStorage.removeItem("eceCurp");
+            window.location.href = "login.html";
+        }
+
+        function abrirPantalla(path, view) {
+            const curp = expedienteActual?.curpPaciente || $("curpInput").value.trim();
+            const params = new URLSearchParams();
+            if (curp) params.set("curp", curp);
+            if (view) params.set("view", view);
+            window.location.href = `${path}?${params.toString()}`;
+        }
+    </script>
+</body>
+</html>
