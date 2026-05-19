@@ -15,6 +15,14 @@ Para construir y ejecutar los contenedores:
 docker compose up --build
 ```
 
+En Windows tambien se puede ejecutar:
+
+```text
+iniciar-proyecto.bat
+```
+
+Ese script busca Maven en el PATH o dentro de NetBeans 22, 23, 24 o 25.
+
 El backend queda disponible en:
 
 ```text
@@ -44,4 +52,21 @@ Para detenerlos y eliminar tambien el volumen de datos de MongoDB:
 
 ```bash
 docker compose down -v
+```
+
+## Datos de prueba
+
+Con el proyecto levantado, carga los expedientes de prueba con:
+
+```text
+cargar-datos-prueba.bat
+```
+
+Credenciales principales:
+
+```text
+sofia.martinez@salud.gob.mx / Sofia#928374
+ivan.ochoa@ece.mx / Ivan#1997
+mariana.ruiz@ece.mx / Tutor#2012
+valeria.ramirez@ece.mx / Valeria#2012
 ```
