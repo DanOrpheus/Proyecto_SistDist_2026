@@ -2,7 +2,10 @@ com\mycompany\ece\backend\ExpedienteResource.class
 com\mycompany\ece\backend\Expediente$AccesoExpediente.class
 com\mycompany\ece\backend\Expediente$ConsultaClinica.class
 com\mycompany\ece\backend\AuthResource.class
+com\mycompany\ece\backend\ExpedienteResource$ArchivoClinicoRequest.class
 com\mycompany\ece\backend\Expediente$Tutor.class
+com\mycompany\ece\backend\ExpedienteResource$SolicitudAcceso.class
+com\mycompany\ece\backend\ExpedienteResource$NotaClinicaRequest.class
 com\mycompany\ece\backend\Expediente$ArchivoClinico.class
 com\mycompany\ece\backend\UsuarioLogin.class
 com\mycompany\ece\backend\Expediente$Biometria.class

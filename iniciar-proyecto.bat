@@ -30,7 +30,7 @@ if not defined MVN_CMD (
 )
 
 echo Usando Maven: %MVN_CMD%
-"%MVN_CMD%" --no-transfer-progress package -DskipTests
+call %MVN_CMD% --no-transfer-progress package -DskipTests
 if errorlevel 1 (
   echo.
   echo ERROR: Fallo la compilacion del backend.
